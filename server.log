@@ -928,3 +928,5 @@ https://nextjs.org/docs/messages/module-not-found
  ○ Compiling /_not-found/page ...
  ✓ Compiled /_not-found/page in 850ms
  GET /https:/dosevision-v2-git-main-mary-browns-projects.vercel.app 404 in 11655ms
+ GET /https:/dosevision-v2-git-main-mary-browns-projects.vercel.app 404 in 6231ms
+ ✓ Compiled in 9.4s

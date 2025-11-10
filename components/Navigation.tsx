@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { Menu, X } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 
 /**
  * Navigation Component
@@ -24,13 +23,9 @@ export function Navigation() {
         <div className="flex justify-between items-center h-16">
           {/* Logo and Brand */}
           <Link href="/" className="flex items-center gap-2">
-            <img
-              src="/logo.png"
-              alt="DoseVision Logo"
-              width="32"
-              height="32"
-              className="flex-shrink-0"
-            />
+            <div className="w-8 h-8 bg-blue-900 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">DV</span>
+            </div>
             <span className="text-lg font-bold text-blue-900">DoseVision</span>
           </Link>
 

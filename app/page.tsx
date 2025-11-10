@@ -16,13 +16,9 @@ export default function Home() {
         <div className="text-center mb-16">
           {/* Logo */}
           <div className="flex justify-center mb-6">
-            <img
-              src="/logo.png"
-              alt="DoseVision Logo"
-              width="120"
-              height="120"
-              className="flex-shrink-0"
-            />
+            <div className="w-24 h-24 bg-blue-900 rounded-2xl flex items-center justify-center shadow-lg">
+              <span className="text-white font-bold text-4xl">DV</span>
+            </div>
           </div>
           
           {/* Name */}
