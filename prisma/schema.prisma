@@ -1,0 +1,240 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// DOSE ORDERING OPTIMIZATION MODELS
+// ============================================
+
+model Patient {
+  id                String   @id @default(cuid())
+  patientId         String   @unique
+  name              String
+  dateOfBirth       DateTime
+  scanType          String
+  duration          Int      // in minutes
+  insurance         String
+  appointmentStatus String   // Confirmed, Pending, Cancelled
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  doseOrders        DoseOrder[]
+  patientDoseInfo   PatientDoseInfo?
+
+  @@index([appointmentStatus])
+}
+
+model Vendor {
+  id                    String   @id @default(cuid())
+  name                  String   @unique
+  unitPrice             Decimal  @db.Decimal(10, 2)
+  insuranceReimbursement Decimal @db.Decimal(10, 2)
+  vendorOrderWindow     String   // e.g., "8:00 AM - 5:00 PM"
+  deliveryTime          String   // e.g., "Next Day"
+  paymentTerms          String   // e.g., "Net 30"
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  doseOrders DoseOrder[]
+}
+
+model DoseOrder {
+  id              String   @id @default(cuid())
+  patientId       String
+  patient         Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  vendorId        String
+  vendor          Vendor   @relation(fields: [vendorId], references: [id])
+  doseType        String   // Primary or Secondary
+  quantity        Int
+  orderDate       DateTime @default(now())
+  deliveryDate    DateTime
+  status          String   // Pending, Confirmed, Delivered, Cancelled
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  doseCredits DoseCredit[]
+
+  @@index([patientId])
+  @@index([vendorId])
+  @@index([status])
+}
+
+model DoseCredit {
+  id              String   @id @default(cuid())
+  doseOrderId     String
+  doseOrder       DoseOrder @relation(fields: [doseOrderId], references: [id], onDelete: Cascade)
+  cancellationId  String?
+  cancellation    Cancellation? @relation(fields: [cancellationId], references: [id])
+  creditAmount    Decimal  @db.Decimal(10, 2)
+  creditDate      DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([doseOrderId])
+}
+
+model Cancellation {
+  id              String   @id @default(cuid())
+  patientId       String
+  reason          String
+  cancellationDate DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  doseCredits DoseCredit[]
+}
+
+// ============================================
+// REGULATORY COMPLIANCE MODELS
+// ============================================
+
+model DailyAreaSurvey {
+  id              String   @id @default(cuid())
+  date            DateTime
+  technologist    String
+  area            String   // Location dropdown
+  doseRate        Decimal  @db.Decimal(10, 4)
+  doseRateUnit    String   // mR/hr, CPM, DPM
+  actions         String?
+  status          String   // Green, Yellow, Red
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([date])
+  @@index([status])
+}
+
+model WeeklyAreaSurvey {
+  id              String   @id @default(cuid())
+  weekEnding      DateTime
+  technologist    String
+  areas           String   // JSON array of areas
+  maxReading      Decimal  @db.Decimal(10, 4)
+  avgReading      Decimal  @db.Decimal(10, 4)
+  comments        String?
+  status          String   // Green, Yellow, Red
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([weekEnding])
+  @@index([status])
+}
+
+model SealedSourceInventory {
+  id              String   @id @default(cuid())
+  date            DateTime
+  sourceId        String
+  isotope         String   // Cs-137 Vial, Co-57 Flood Source, etc.
+  activity        Decimal  @db.Decimal(10, 4)
+  location        String
+  condition       String
+  comments        String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([date])
+  @@index([sourceId])
+}
+
+model TracerCheckInOut {
+  id              String   @id @default(cuid())
+  date            DateTime
+  tracerType      String   // Isotope type
+  technologist    String
+  checkInTime     DateTime?
+  checkOutTime    DateTime?
+  patientId       String?
+  action          String   // Check In, Return Container
+  vendorName      String?
+  barcodeScanned  String?
+  status          String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([date])
+  @@index([tracerType])
+}
+
+model PatientDoseInfo {
+  id              String   @id @default(cuid())
+  patientId       String   @unique
+  patient         Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  dateOfBirth     DateTime
+  doseName        String
+  preInjectionTime DateTime?
+  injectionTime   DateTime?
+  postInjectionTime DateTime?
+  doseOrdered     Decimal  @db.Decimal(10, 4)
+  doseDelivered   Decimal  @db.Decimal(10, 4)
+  scanDate        DateTime
+  cancellation    Boolean  @default(false)
+  creditDue       Decimal  @db.Decimal(10, 2)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([scanDate])
+}
+
+model QCOnInstrument {
+  id              String   @id @default(cuid())
+  date            DateTime
+  instrumentId    String   // Capintec CRC-55, Ludlum Survey Meter, etc.
+  technologist    String
+  vialMciAmount   Decimal? @db.Decimal(10, 4)
+  qcTest          String   // Survey Meter Battery Check, Constancy, etc.
+  result          String
+  comments        String?
+  status          String   // Pass, Fail
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([date])
+  @@index([instrumentId])
+}
+
+model DosimeterTracker {
+  id              String   @id @default(cuid())
+  date            DateTime
+  employee        String
+  badgeId         String
+  exposure        Decimal  @db.Decimal(10, 4)
+  monthlyTotal    Decimal  @db.Decimal(10, 4)
+  quarterlyTotal  Decimal  @db.Decimal(10, 4)
+  yearlyTotal     Decimal  @db.Decimal(10, 4)
+  status          String   // Green, Yellow, Red
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([date])
+  @@index([badgeId])
+  @@index([status])
+}
+
+model WasteManagement {
+  id              String   @id @default(cuid())
+  binName         String
+  binNumber       String   @unique
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model ActionItem {
+  id              String   @id @default(cuid())
+  dueDate         DateTime
+  title           String
+  description     String?
+  completed       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([dueDate])
+  @@index([completed])
+}
