@@ -21,6 +21,14 @@ const sampleDosimeters = [
   { id: 'DM004', technologist: 'MG', monthlyDose: 10.1, quarterlyDose: 31.5, yearlyDose: 112.4, status: 'Green', lastUpdate: '2025-11-08' },
 ]
 
+const formatDateMMDDYY = (dateStr: string) => {
+  const date = new Date(dateStr + 'T00:00:00')
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const year = String(date.getFullYear()).slice(-2)
+  return `${month}/${day}/${year}`
+}
+
 export function DosimeterTracker() {
   const [dosimeters, setDosimeters] = useState(sampleDosimeters)
   const [formData, setFormData] = useState({
@@ -78,6 +86,10 @@ export function DosimeterTracker() {
     }
   }
 
+  const deleteDosimeter = (id: string) => {
+    setDosimeters(dosimeters.filter((d) => d.id !== id))
+  }
+
   const greenCount = dosimeters.filter((d) => d.status === 'Green').length
   const yellowCount = dosimeters.filter((d) => d.status === 'Yellow').length
   const redCount = dosimeters.filter((d) => d.status === 'Red').length
@@ -96,12 +108,12 @@ export function DosimeterTracker() {
         dosimeter.quarterlyDose,
         dosimeter.yearlyDose,
         dosimeter.status,
-        dosimeter.lastUpdate,
+        formatDateMMDDYY(dosimeter.lastUpdate),
       ]),
       [],
-      ['Green Count', greenCount],
-      ['Yellow Count', yellowCount],
-      ['Red Count', redCount],
+      ['Green', greenCount],
+      ['Yellow', yellowCount],
+      ['Red', redCount],
       ['Average Yearly Dose', `${avgYearlyDose} mrem`],
     ]
 
@@ -113,22 +125,53 @@ export function DosimeterTracker() {
 
   return (
     <div className="space-y-6">
-      {/* Add/Update Dosimeter Form */}
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Update Dosimeter Reading</h3>
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900">Dosimeter Tracker</h3>
+          <p className="text-sm text-gray-600 mt-1">{dosimeters.length} technologists tracked</p>
+        </div>
+        <Button onClick={exportToExcel} className="bg-blue-900 hover:bg-blue-800">
+          Export to Excel
+        </Button>
+      </div>
+
+      {/* Statistics */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card className="p-4">
+          <p className="text-xs text-gray-600 mb-1">Green</p>
+          <p className="text-2xl font-bold text-green-600">{greenCount}</p>
+        </Card>
+        <Card className="p-4">
+          <p className="text-xs text-gray-600 mb-1">Yellow</p>
+          <p className="text-2xl font-bold text-yellow-600">{yellowCount}</p>
+        </Card>
+        <Card className="p-4">
+          <p className="text-xs text-gray-600 mb-1">Red</p>
+          <p className="text-2xl font-bold text-red-600">{redCount}</p>
+        </Card>
+        <Card className="p-4">
+          <p className="text-xs text-gray-600 mb-1">Avg Yearly Dose</p>
+          <p className="text-2xl font-bold text-blue-900">{avgYearlyDose} mrem</p>
+        </Card>
+      </div>
+
+      {/* Update Dosimeter Form */}
+      <Card className="p-6 border-2 border-blue-900">
+        <h4 className="text-lg font-semibold text-gray-900 mb-4">Update Dosimeter Reading</h4>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="technologist">Technologist Initials</Label>
+              <Label htmlFor="technologist">Technologist</Label>
               <select
                 id="technologist"
                 value={formData.technologist}
                 onChange={(e) => setFormData({ ...formData, technologist: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-900"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
               >
-                {technologistInitials.map((init) => (
-                  <option key={init} value={init}>
-                    {init}
+                {technologistInitials.map((tech) => (
+                  <option key={tech} value={tech}>
+                    {tech}
                   </option>
                 ))}
               </select>
@@ -167,55 +210,28 @@ export function DosimeterTracker() {
               />
             </div>
           </div>
-          <Button type="submit" className="bg-blue-900 hover:bg-blue-800">
+
+          <Button type="submit" className="bg-green-600 hover:bg-green-700">
             Update Dosimeter
           </Button>
         </form>
       </Card>
 
-      {/* Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <Card className="p-6">
-          <p className="text-sm text-gray-600 mb-2">Total Employees</p>
-          <p className="text-2xl font-bold text-blue-900">{dosimeters.length}</p>
-        </Card>
-        <Card className="p-6">
-          <p className="text-sm text-gray-600 mb-2">Green</p>
-          <p className="text-2xl font-bold text-green-600">{greenCount}</p>
-        </Card>
-        <Card className="p-6">
-          <p className="text-sm text-gray-600 mb-2">Yellow</p>
-          <p className="text-2xl font-bold text-yellow-600">{yellowCount}</p>
-        </Card>
-        <Card className="p-6">
-          <p className="text-sm text-gray-600 mb-2">Red</p>
-          <p className="text-2xl font-bold text-red-600">{redCount}</p>
-        </Card>
-        <Card className="p-6">
-          <p className="text-sm text-gray-600 mb-2">Avg Yearly Dose</p>
-          <p className="text-2xl font-bold text-blue-900">{avgYearlyDose} mrem</p>
-        </Card>
-      </div>
-
-      {/* Dosimeter Records Table */}
+      {/* Dosimeters Table */}
       <Card className="p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Dosimeter Records</h3>
-          <Button onClick={exportToExcel} className="bg-blue-900 hover:bg-blue-800">
-            Export to Excel
-          </Button>
-        </div>
+        <h4 className="text-lg font-semibold text-gray-900 mb-4">Dosimeter Records</h4>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-200">
                 <th className="text-left py-3 px-4 font-semibold text-gray-900">ID</th>
                 <th className="text-left py-3 px-4 font-semibold text-gray-900">Technologist</th>
-                <th className="text-right py-3 px-4 font-semibold text-gray-900">Monthly (mrem)</th>
-                <th className="text-right py-3 px-4 font-semibold text-gray-900">Quarterly (mrem)</th>
-                <th className="text-right py-3 px-4 font-semibold text-gray-900">Yearly (mrem)</th>
+                <th className="text-center py-3 px-4 font-semibold text-gray-900">Monthly (mrem)</th>
+                <th className="text-center py-3 px-4 font-semibold text-gray-900">Quarterly (mrem)</th>
+                <th className="text-center py-3 px-4 font-semibold text-gray-900">Yearly (mrem)</th>
                 <th className="text-center py-3 px-4 font-semibold text-gray-900">Status</th>
                 <th className="text-left py-3 px-4 font-semibold text-gray-900">Last Update</th>
+                <th className="text-center py-3 px-4 font-semibold text-gray-900">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -223,19 +239,32 @@ export function DosimeterTracker() {
                 <tr key={dosimeter.id} className="border-b border-gray-100 hover:bg-gray-50">
                   <td className="py-3 px-4 text-gray-900 font-medium">{dosimeter.id}</td>
                   <td className="py-3 px-4 text-gray-700">{dosimeter.technologist}</td>
-                  <td className="text-right py-3 px-4 text-gray-700">{dosimeter.monthlyDose}</td>
-                  <td className="text-right py-3 px-4 text-gray-700">{dosimeter.quarterlyDose}</td>
-                  <td className="text-right py-3 px-4 text-gray-900 font-medium">{dosimeter.yearlyDose}</td>
+                  <td className="text-center py-3 px-4 text-gray-700">{dosimeter.monthlyDose}</td>
+                  <td className="text-center py-3 px-4 text-gray-700">{dosimeter.quarterlyDose}</td>
+                  <td className="text-center py-3 px-4 text-gray-700">{dosimeter.yearlyDose}</td>
                   <td className="text-center py-3 px-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      dosimeter.status === 'Green' ? 'bg-green-100 text-green-800' :
-                      dosimeter.status === 'Yellow' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-red-100 text-red-800'
-                    }`}>
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        dosimeter.status === 'Green'
+                          ? 'bg-green-100 text-green-800'
+                          : dosimeter.status === 'Yellow'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-red-100 text-red-800'
+                      }`}
+                    >
                       {dosimeter.status}
                     </span>
                   </td>
-                  <td className="py-3 px-4 text-gray-700">{dosimeter.lastUpdate}</td>
+                  <td className="py-3 px-4 text-gray-700">{formatDateMMDDYY(dosimeter.lastUpdate)}</td>
+                  <td className="text-center py-3 px-4">
+                    <button
+                      onClick={() => deleteDosimeter(dosimeter.id)}
+                      className="text-red-600 hover:text-red-800 font-medium"
+                      title="Delete"
+                    >
+                      ✕
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>

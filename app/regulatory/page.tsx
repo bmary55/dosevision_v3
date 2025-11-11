@@ -26,9 +26,9 @@ export default function RegulatoryPage() {
   const tabs: { id: TabType; label: string; line: 1 | 2 }[] = [
     { id: 'daily', label: 'Daily Area Survey', line: 1 },
     { id: 'weekly', label: 'Weekly Area Survey', line: 1 },
-    { id: 'sealed', label: 'Sealed Source Inventory', line: 1 },
+    { id: 'sealed', label: 'Seal Source Inventory', line: 1 },
     { id: 'tracer', label: 'Tracer Check In/Out', line: 1 },
-    { id: 'patient', label: 'Patient Dose Info', line: 2 },
+    { id: 'patient', label: 'Patient Dose Log', line: 2 },
     { id: 'hotlab', label: 'Hot Lab Instruments', line: 2 },
     { id: 'dosimeter', label: 'Dosimeter Tracker', line: 2 },
     { id: 'waste', label: 'Waste Management', line: 2 },

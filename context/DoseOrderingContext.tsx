@@ -5,6 +5,7 @@ import React, { createContext, useContext, useState, ReactNode } from 'react'
 export interface Schedule {
   id: string
   patientName: string
+  patientId: string
   date: string
   scanTime: string
   isotope: string

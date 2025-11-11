@@ -17,7 +17,7 @@ export default function DoseOrderingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Dose Ordering System</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Dose Optimization</h1>
             <p className="text-gray-600 mt-2">
               Intelligent dose ordering with live data integration from schedules, vendors, and insurance providers
             </p>
@@ -33,7 +33,7 @@ export default function DoseOrderingPage() {
                   : 'border-transparent text-gray-600 hover:text-gray-900'
               }`}
             >
-              📋 Dose Ordering
+              Dose Ordering
             </button>
             <button
               onClick={() => setActiveTab('schedule')}
@@ -43,7 +43,7 @@ export default function DoseOrderingPage() {
                   : 'border-transparent text-gray-600 hover:text-gray-900'
               }`}
             >
-              📅 Schedule
+              Schedule
             </button>
             <button
               onClick={() => setActiveTab('vendors')}
@@ -53,7 +53,7 @@ export default function DoseOrderingPage() {
                   : 'border-transparent text-gray-600 hover:text-gray-900'
               }`}
             >
-              🏢 Vendors
+              Vendors
             </button>
             <button
               onClick={() => setActiveTab('insurance')}
@@ -63,7 +63,7 @@ export default function DoseOrderingPage() {
                   : 'border-transparent text-gray-600 hover:text-gray-900'
               }`}
             >
-              🏥 Health Insurance
+              Health Insurance
             </button>
             <button
               onClick={() => setActiveTab('credits')}
@@ -73,7 +73,7 @@ export default function DoseOrderingPage() {
                   : 'border-transparent text-gray-600 hover:text-gray-900'
               }`}
             >
-              💳 Dose Credits
+              Dose Credits
             </button>
           </div>
 

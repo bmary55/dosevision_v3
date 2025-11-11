@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import Image from 'next/image'
 
 /**
  * Home Page
@@ -16,8 +17,14 @@ export default function Home() {
         <div className="text-center mb-16">
           {/* Logo */}
           <div className="flex justify-center mb-6">
-            <div className="w-24 h-24 bg-blue-900 rounded-2xl flex items-center justify-center shadow-lg">
-              <span className="text-white font-bold text-4xl">DV</span>
+            <div className="w-24 h-24 flex items-center justify-center shadow-lg">
+              <Image 
+                src="/dosevision-logo.png" 
+                alt="DoseVision Logo" 
+                width={96} 
+                height={96}
+                priority
+              />
             </div>
           </div>
           
@@ -97,10 +104,10 @@ export default function Home() {
           <div className="grid md:grid-cols-3 gap-8">
             <Card className="p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                Clean & Minimalist UI
+                Smart Financial Dose Ordering
               </h3>
               <p className="text-gray-600">
-                Dark navy blue and light gray color scheme for professional appearance and reduced eye strain
+                Intelligent dose ordering with live data integration that optimizes for cost-effectiveness and profit margins while maintaining clinical excellence
               </p>
             </Card>
             <Card className="p-6">
@@ -113,10 +120,10 @@ export default function Home() {
             </Card>
             <Card className="p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                Excel Export
+                Easy to Use
               </h3>
               <p className="text-gray-600">
-                Export all compliance data to Excel with conditional formatting for easy analysis and reporting
+                Intuitive interface designed for medical professionals with minimal training required for complex dose optimization workflows
               </p>
             </Card>
           </div>

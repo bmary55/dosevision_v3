@@ -24,6 +24,14 @@ const sampleQC = [
   { id: 'QC003', date: '2025-11-07', instrument: 'Capintec CRC-55', testType: 'Accuracy (Quarterly)', result: 'Pass', technologist: 'NB', comments: 'Calibration verified' },
 ]
 
+const formatDateMMDDYY = (dateStr: string) => {
+  const date = new Date(dateStr + 'T00:00:00')
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const year = String(date.getFullYear()).slice(-2)
+  return `${month}/${day}/${year}`
+}
+
 export function HotLabInstruments() {
   const [qcRecords, setQcRecords] = useState(sampleQC)
   const [formData, setFormData] = useState({
@@ -59,6 +67,10 @@ export function HotLabInstruments() {
     }
   }
 
+  const deleteRecord = (id: string) => {
+    setQcRecords(qcRecords.filter((r) => r.id !== id))
+  }
+
   const passCount = qcRecords.filter((r) => r.result === 'Pass').length
   const failCount = qcRecords.filter((r) => r.result === 'Fail').length
 
@@ -70,7 +82,7 @@ export function HotLabInstruments() {
       ['ID', 'Date', 'Instrument', 'Test Type', 'Result', 'Technologist', 'Comments'],
       ...qcRecords.map((record) => [
         record.id,
-        record.date,
+        formatDateMMDDYY(record.date),
         record.instrument,
         record.testType,
         record.result,
@@ -78,8 +90,8 @@ export function HotLabInstruments() {
         record.comments,
       ]),
       [],
-      ['Pass Count', passCount],
-      ['Fail Count', failCount],
+      ['Pass', passCount],
+      ['Fail', failCount],
     ]
 
     const ws = XLSX.utils.aoa_to_sheet(ws_data)
@@ -90,9 +102,32 @@ export function HotLabInstruments() {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900">Hot Lab Instruments</h3>
+          <p className="text-sm text-gray-600 mt-1">{qcRecords.length} QC records</p>
+        </div>
+        <Button onClick={exportToExcel} className="bg-blue-900 hover:bg-blue-800">
+          Export to Excel
+        </Button>
+      </div>
+
+      {/* Statistics */}
+      <div className="grid grid-cols-2 gap-4">
+        <Card className="p-4">
+          <p className="text-xs text-gray-600 mb-1">Pass</p>
+          <p className="text-2xl font-bold text-green-600">{passCount}</p>
+        </Card>
+        <Card className="p-4">
+          <p className="text-xs text-gray-600 mb-1">Fail</p>
+          <p className="text-2xl font-bold text-red-600">{failCount}</p>
+        </Card>
+      </div>
+
       {/* Add QC Record Form */}
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Add QC Record</h3>
+      <Card className="p-6 border-2 border-blue-900">
+        <h4 className="text-lg font-semibold text-gray-900 mb-4">Record QC Test</h4>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -110,7 +145,7 @@ export function HotLabInstruments() {
                 id="instrument"
                 value={formData.instrument}
                 onChange={(e) => setFormData({ ...formData, instrument: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-900"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
               >
                 {instruments.map((inst) => (
                   <option key={inst} value={inst}>
@@ -125,7 +160,7 @@ export function HotLabInstruments() {
                 id="testType"
                 value={formData.testType}
                 onChange={(e) => setFormData({ ...formData, testType: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-900"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
               >
                 {qcTests.map((test) => (
                   <option key={test} value={test}>
@@ -140,68 +175,47 @@ export function HotLabInstruments() {
                 id="result"
                 value={formData.result}
                 onChange={(e) => setFormData({ ...formData, result: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-900"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
               >
-                <option>Pass</option>
-                <option>Fail</option>
-                <option>Conditional</option>
+                <option value="Pass">Pass</option>
+                <option value="Fail">Fail</option>
               </select>
             </div>
             <div>
-              <Label htmlFor="technologist">Technologist Initials</Label>
+              <Label htmlFor="technologist">Technologist</Label>
               <select
                 id="technologist"
                 value={formData.technologist}
                 onChange={(e) => setFormData({ ...formData, technologist: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-900"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
               >
-                {technologistInitials.map((init) => (
-                  <option key={init} value={init}>
-                    {init}
+                {technologistInitials.map((tech) => (
+                  <option key={tech} value={tech}>
+                    {tech}
                   </option>
                 ))}
               </select>
             </div>
-            <div className="md:col-span-2">
+            <div>
               <Label htmlFor="comments">Comments</Label>
               <Input
                 id="comments"
-                placeholder="Enter any comments"
+                placeholder="Enter comments"
                 value={formData.comments}
                 onChange={(e) => setFormData({ ...formData, comments: e.target.value })}
               />
             </div>
           </div>
-          <Button type="submit" className="bg-blue-900 hover:bg-blue-800">
-            Submit QC Record
+
+          <Button type="submit" className="bg-green-600 hover:bg-green-700">
+            Record QC Test
           </Button>
         </form>
       </Card>
 
-      {/* Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="p-6">
-          <p className="text-sm text-gray-600 mb-2">Total Tests</p>
-          <p className="text-2xl font-bold text-blue-900">{qcRecords.length}</p>
-        </Card>
-        <Card className="p-6">
-          <p className="text-sm text-gray-600 mb-2">Pass</p>
-          <p className="text-2xl font-bold text-green-600">{passCount}</p>
-        </Card>
-        <Card className="p-6">
-          <p className="text-sm text-gray-600 mb-2">Fail</p>
-          <p className="text-2xl font-bold text-red-600">{failCount}</p>
-        </Card>
-      </div>
-
       {/* QC Records Table */}
       <Card className="p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">QC Records</h3>
-          <Button onClick={exportToExcel} className="bg-blue-900 hover:bg-blue-800">
-            Export to Excel
-          </Button>
-        </div>
+        <h4 className="text-lg font-semibold text-gray-900 mb-4">QC Test Records</h4>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -213,26 +227,38 @@ export function HotLabInstruments() {
                 <th className="text-center py-3 px-4 font-semibold text-gray-900">Result</th>
                 <th className="text-center py-3 px-4 font-semibold text-gray-900">Technologist</th>
                 <th className="text-left py-3 px-4 font-semibold text-gray-900">Comments</th>
+                <th className="text-center py-3 px-4 font-semibold text-gray-900">Action</th>
               </tr>
             </thead>
             <tbody>
               {qcRecords.map((record) => (
                 <tr key={record.id} className="border-b border-gray-100 hover:bg-gray-50">
                   <td className="py-3 px-4 text-gray-900 font-medium">{record.id}</td>
-                  <td className="py-3 px-4 text-gray-700">{record.date}</td>
+                  <td className="py-3 px-4 text-gray-700">{formatDateMMDDYY(record.date)}</td>
                   <td className="py-3 px-4 text-gray-700">{record.instrument}</td>
-                  <td className="py-3 px-4 text-gray-700">{record.testType}</td>
+                  <td className="py-3 px-4 text-gray-700 text-xs">{record.testType}</td>
                   <td className="text-center py-3 px-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      record.result === 'Pass' ? 'bg-green-100 text-green-800' :
-                      record.result === 'Fail' ? 'bg-red-100 text-red-800' :
-                      'bg-yellow-100 text-yellow-800'
-                    }`}>
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        record.result === 'Pass'
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-red-100 text-red-800'
+                      }`}
+                    >
                       {record.result}
                     </span>
                   </td>
                   <td className="text-center py-3 px-4 text-gray-700">{record.technologist}</td>
-                  <td className="py-3 px-4 text-gray-700">{record.comments}</td>
+                  <td className="py-3 px-4 text-gray-700 text-xs">{record.comments}</td>
+                  <td className="text-center py-3 px-4">
+                    <button
+                      onClick={() => deleteRecord(record.id)}
+                      className="text-red-600 hover:text-red-800 font-medium"
+                      title="Delete"
+                    >
+                      ✕
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>

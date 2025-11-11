@@ -28,10 +28,18 @@ const locations = [
 const technologistInitials = ['MK', 'JB', 'NB', 'MG']
 
 const sampleWeeklySurveys = [
-  { id: 'WAS001', week: '2025-W45', location: 'Hot Lab', maxReading: 3.2, avgReading: 2.1, status: 'Green', technologist: 'MK' },
-  { id: 'WAS002', week: '2025-W45', location: 'Nuclear Medicine Camera', maxReading: 2.5, avgReading: 1.8, status: 'Green', technologist: 'JB' },
-  { id: 'WAS003', week: '2025-W44', location: 'PET Camera', maxReading: 4.1, avgReading: 3.2, status: 'Yellow', technologist: 'NB' },
+  { id: 'WAS001', week: '2025-11-08', location: 'Hot Lab', maxReading: 3.2, avgReading: 2.1, status: 'Green', technologist: 'MK' },
+  { id: 'WAS002', week: '2025-11-08', location: 'Nuclear Medicine Camera', maxReading: 2.5, avgReading: 1.8, status: 'Green', technologist: 'JB' },
+  { id: 'WAS003', week: '2025-11-01', location: 'PET Camera', maxReading: 4.1, avgReading: 3.2, status: 'Yellow', technologist: 'NB' },
 ]
+
+const formatDateMMDDYY = (dateStr: string) => {
+  const date = new Date(dateStr + 'T00:00:00')
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const year = String(date.getFullYear()).slice(-2)
+  return `${month}/${day}/${year}`
+}
 
 export function WeeklyAreaSurvey() {
   const [surveys, setSurveys] = useState(sampleWeeklySurveys)
@@ -74,6 +82,10 @@ export function WeeklyAreaSurvey() {
     }
   }
 
+  const deleteSurvey = (id: string) => {
+    setSurveys(surveys.filter((s) => s.id !== id))
+  }
+
   const greenCount = surveys.filter((s) => s.status === 'Green').length
   const yellowCount = surveys.filter((s) => s.status === 'Yellow').length
   const redCount = surveys.filter((s) => s.status === 'Red').length
@@ -86,7 +98,7 @@ export function WeeklyAreaSurvey() {
       ['ID', 'Week', 'Location', 'Max Reading (mR/hr)', 'Avg Reading (mR/hr)', 'Status', 'Technologist'],
       ...surveys.map((survey) => [
         survey.id,
-        survey.week,
+        formatDateMMDDYY(survey.week),
         survey.location,
         survey.maxReading,
         survey.avgReading,
@@ -107,13 +119,40 @@ export function WeeklyAreaSurvey() {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900">Weekly Area Survey</h3>
+          <p className="text-sm text-gray-600 mt-1">{surveys.length} surveys recorded</p>
+        </div>
+        <Button onClick={exportToExcel} className="bg-blue-900 hover:bg-blue-800">
+          Export to Excel
+        </Button>
+      </div>
+
+      {/* Statistics */}
+      <div className="grid grid-cols-3 gap-4">
+        <Card className="p-4">
+          <p className="text-xs text-gray-600 mb-1">Green</p>
+          <p className="text-2xl font-bold text-green-600">{greenCount}</p>
+        </Card>
+        <Card className="p-4">
+          <p className="text-xs text-gray-600 mb-1">Yellow</p>
+          <p className="text-2xl font-bold text-yellow-600">{yellowCount}</p>
+        </Card>
+        <Card className="p-4">
+          <p className="text-xs text-gray-600 mb-1">Red</p>
+          <p className="text-2xl font-bold text-red-600">{redCount}</p>
+        </Card>
+      </div>
+
       {/* Add Survey Form */}
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Weekly Survey</h3>
+      <Card className="p-6 border-2 border-blue-900">
+        <h4 className="text-lg font-semibold text-gray-900 mb-4">Record New Weekly Survey</h4>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="week">Week</Label>
+              <Label htmlFor="week">Week Starting Date</Label>
               <Input
                 id="week"
                 type="date"
@@ -127,7 +166,7 @@ export function WeeklyAreaSurvey() {
                 id="location"
                 value={formData.location}
                 onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-900"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
               >
                 {locations.map((loc) => (
                   <option key={loc} value={loc}>
@@ -158,56 +197,32 @@ export function WeeklyAreaSurvey() {
                 onChange={(e) => setFormData({ ...formData, avgReading: e.target.value })}
               />
             </div>
-            <div className="md:col-span-2">
-              <Label htmlFor="technologist">Technologist Initials</Label>
+            <div>
+              <Label htmlFor="technologist">Technologist</Label>
               <select
                 id="technologist"
                 value={formData.technologist}
                 onChange={(e) => setFormData({ ...formData, technologist: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-900"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
               >
-                {technologistInitials.map((init) => (
-                  <option key={init} value={init}>
-                    {init}
+                {technologistInitials.map((tech) => (
+                  <option key={tech} value={tech}>
+                    {tech}
                   </option>
                 ))}
               </select>
             </div>
           </div>
-          <Button type="submit" className="bg-blue-900 hover:bg-blue-800">
-            Submit Survey
+
+          <Button type="submit" className="bg-green-600 hover:bg-green-700">
+            Record Survey
           </Button>
         </form>
       </Card>
 
-      {/* Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="p-6">
-          <p className="text-sm text-gray-600 mb-2">Total Surveys</p>
-          <p className="text-2xl font-bold text-blue-900">{surveys.length}</p>
-        </Card>
-        <Card className="p-6">
-          <p className="text-sm text-gray-600 mb-2">Green</p>
-          <p className="text-2xl font-bold text-green-600">{greenCount}</p>
-        </Card>
-        <Card className="p-6">
-          <p className="text-sm text-gray-600 mb-2">Yellow</p>
-          <p className="text-2xl font-bold text-yellow-600">{yellowCount}</p>
-        </Card>
-        <Card className="p-6">
-          <p className="text-sm text-gray-600 mb-2">Red</p>
-          <p className="text-2xl font-bold text-red-600">{redCount}</p>
-        </Card>
-      </div>
-
-      {/* Survey Records Table */}
+      {/* Surveys Table */}
       <Card className="p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Survey Records</h3>
-          <Button onClick={exportToExcel} className="bg-blue-900 hover:bg-blue-800">
-            Export to Excel
-          </Button>
-        </div>
+        <h4 className="text-lg font-semibold text-gray-900 mb-4">Weekly Survey Records</h4>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -215,30 +230,44 @@ export function WeeklyAreaSurvey() {
                 <th className="text-left py-3 px-4 font-semibold text-gray-900">ID</th>
                 <th className="text-left py-3 px-4 font-semibold text-gray-900">Week</th>
                 <th className="text-left py-3 px-4 font-semibold text-gray-900">Location</th>
-                <th className="text-right py-3 px-4 font-semibold text-gray-900">Max (mR/hr)</th>
-                <th className="text-right py-3 px-4 font-semibold text-gray-900">Avg (mR/hr)</th>
+                <th className="text-center py-3 px-4 font-semibold text-gray-900">Max (mR/hr)</th>
+                <th className="text-center py-3 px-4 font-semibold text-gray-900">Avg (mR/hr)</th>
                 <th className="text-center py-3 px-4 font-semibold text-gray-900">Status</th>
                 <th className="text-center py-3 px-4 font-semibold text-gray-900">Technologist</th>
+                <th className="text-center py-3 px-4 font-semibold text-gray-900">Action</th>
               </tr>
             </thead>
             <tbody>
               {surveys.map((survey) => (
                 <tr key={survey.id} className="border-b border-gray-100 hover:bg-gray-50">
                   <td className="py-3 px-4 text-gray-900 font-medium">{survey.id}</td>
-                  <td className="py-3 px-4 text-gray-700">{survey.week}</td>
+                  <td className="py-3 px-4 text-gray-700">{formatDateMMDDYY(survey.week)}</td>
                   <td className="py-3 px-4 text-gray-700">{survey.location}</td>
-                  <td className="text-right py-3 px-4 text-gray-700">{survey.maxReading}</td>
-                  <td className="text-right py-3 px-4 text-gray-700">{survey.avgReading}</td>
+                  <td className="text-center py-3 px-4 text-gray-700">{survey.maxReading}</td>
+                  <td className="text-center py-3 px-4 text-gray-700">{survey.avgReading}</td>
                   <td className="text-center py-3 px-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      survey.status === 'Green' ? 'bg-green-100 text-green-800' :
-                      survey.status === 'Yellow' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-red-100 text-red-800'
-                    }`}>
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        survey.status === 'Green'
+                          ? 'bg-green-100 text-green-800'
+                          : survey.status === 'Yellow'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-red-100 text-red-800'
+                      }`}
+                    >
                       {survey.status}
                     </span>
                   </td>
                   <td className="text-center py-3 px-4 text-gray-700">{survey.technologist}</td>
+                  <td className="text-center py-3 px-4">
+                    <button
+                      onClick={() => deleteSurvey(survey.id)}
+                      className="text-red-600 hover:text-red-800 font-medium"
+                      title="Delete"
+                    >
+                      ✕
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>

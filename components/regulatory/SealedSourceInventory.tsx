@@ -20,6 +20,14 @@ const sampleSources = [
   { id: 'SS003', isotope: 'Ba-133', activity: 3.1, location: 'Hot Lab Safe', lastInventory: '2025-11-07', technologist: 'NB' },
 ]
 
+const formatDateMMDDYY = (dateStr: string) => {
+  const date = new Date(dateStr + 'T00:00:00')
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const year = String(date.getFullYear()).slice(-2)
+  return `${month}/${day}/${year}`
+}
+
 export function SealedSourceInventory() {
   const [sources, setSources] = useState(sampleSources)
   const [formData, setFormData] = useState({
@@ -50,6 +58,10 @@ export function SealedSourceInventory() {
     }
   }
 
+  const deleteSource = (id: string) => {
+    setSources(sources.filter((s) => s.id !== id))
+  }
+
   const totalActivity = sources.reduce((sum, s) => sum + s.activity, 0)
 
   const exportToExcel = () => {
@@ -63,7 +75,7 @@ export function SealedSourceInventory() {
         source.isotope,
         source.activity,
         source.location,
-        source.lastInventory,
+        formatDateMMDDYY(source.lastInventory),
         source.technologist,
       ]),
       [],
@@ -78,16 +90,33 @@ export function SealedSourceInventory() {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900">Seal Source Inventory</h3>
+          <p className="text-sm text-gray-600 mt-1">{sources.length} sealed sources tracked</p>
+        </div>
+        <Button onClick={exportToExcel} className="bg-blue-900 hover:bg-blue-800">
+          Export to Excel
+        </Button>
+      </div>
+
+      {/* Total Activity */}
+      <Card className="p-4 bg-blue-50">
+        <p className="text-xs text-gray-600 mb-1">Total Activity</p>
+        <p className="text-2xl font-bold text-blue-900">{totalActivity.toFixed(1)} µCi</p>
+      </Card>
+
       {/* Add Source Form */}
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Add Sealed Source</h3>
+      <Card className="p-6 border-2 border-blue-900">
+        <h4 className="text-lg font-semibold text-gray-900 mb-4">Add New Sealed Source</h4>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="isotope">Isotope</Label>
               <Input
                 id="isotope"
-                placeholder="e.g., Co-57, Cs-137"
+                placeholder="e.g., Co-57"
                 value={formData.isotope}
                 onChange={(e) => setFormData({ ...formData, isotope: e.target.value })}
               />
@@ -113,57 +142,42 @@ export function SealedSourceInventory() {
               />
             </div>
             <div>
-              <Label htmlFor="technologist">Technologist Initials</Label>
+              <Label htmlFor="technologist">Technologist</Label>
               <select
                 id="technologist"
                 value={formData.technologist}
                 onChange={(e) => setFormData({ ...formData, technologist: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-900"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
               >
-                {technologistInitials.map((init) => (
-                  <option key={init} value={init}>
-                    {init}
+                {technologistInitials.map((tech) => (
+                  <option key={tech} value={tech}>
+                    {tech}
                   </option>
                 ))}
               </select>
             </div>
           </div>
-          <Button type="submit" className="bg-blue-900 hover:bg-blue-800">
+
+          <Button type="submit" className="bg-green-600 hover:bg-green-700">
             Add Source
           </Button>
         </form>
       </Card>
 
-      {/* Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="p-6">
-          <p className="text-sm text-gray-600 mb-2">Total Sources</p>
-          <p className="text-2xl font-bold text-blue-900">{sources.length}</p>
-        </Card>
-        <Card className="p-6">
-          <p className="text-sm text-gray-600 mb-2">Total Activity</p>
-          <p className="text-2xl font-bold text-blue-900">{totalActivity.toFixed(1)} µCi</p>
-        </Card>
-      </div>
-
       {/* Sources Table */}
       <Card className="p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Sealed Sources</h3>
-          <Button onClick={exportToExcel} className="bg-blue-900 hover:bg-blue-800">
-            Export to Excel
-          </Button>
-        </div>
+        <h4 className="text-lg font-semibold text-gray-900 mb-4">Sealed Sources</h4>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-200">
                 <th className="text-left py-3 px-4 font-semibold text-gray-900">ID</th>
                 <th className="text-left py-3 px-4 font-semibold text-gray-900">Isotope</th>
-                <th className="text-right py-3 px-4 font-semibold text-gray-900">Activity (µCi)</th>
+                <th className="text-center py-3 px-4 font-semibold text-gray-900">Activity (µCi)</th>
                 <th className="text-left py-3 px-4 font-semibold text-gray-900">Location</th>
                 <th className="text-left py-3 px-4 font-semibold text-gray-900">Last Inventory</th>
                 <th className="text-center py-3 px-4 font-semibold text-gray-900">Technologist</th>
+                <th className="text-center py-3 px-4 font-semibold text-gray-900">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -171,10 +185,19 @@ export function SealedSourceInventory() {
                 <tr key={source.id} className="border-b border-gray-100 hover:bg-gray-50">
                   <td className="py-3 px-4 text-gray-900 font-medium">{source.id}</td>
                   <td className="py-3 px-4 text-gray-700">{source.isotope}</td>
-                  <td className="text-right py-3 px-4 text-gray-700">{source.activity}</td>
+                  <td className="text-center py-3 px-4 text-gray-700">{source.activity}</td>
                   <td className="py-3 px-4 text-gray-700">{source.location}</td>
-                  <td className="py-3 px-4 text-gray-700">{source.lastInventory}</td>
+                  <td className="py-3 px-4 text-gray-700">{formatDateMMDDYY(source.lastInventory)}</td>
                   <td className="text-center py-3 px-4 text-gray-700">{source.technologist}</td>
+                  <td className="text-center py-3 px-4">
+                    <button
+                      onClick={() => deleteSource(source.id)}
+                      className="text-red-600 hover:text-red-800 font-medium"
+                      title="Delete"
+                    >
+                      ✕
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>

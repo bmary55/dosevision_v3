@@ -297,9 +297,9 @@ export function VendorManagement() {
         ))}
       </div>
 
-      {/* Vendors Table */}
+      {/* Vendors Table with Pricing */}
       <Card className="p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">All Vendors</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">All Vendors with Pricing</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -309,6 +309,7 @@ export function VendorManagement() {
                 <th className="text-left py-3 px-4 font-semibold text-gray-900">Payment Terms</th>
                 <th className="text-left py-3 px-4 font-semibold text-gray-900">Delivery</th>
                 <th className="text-center py-3 px-4 font-semibold text-gray-900">Isotopes</th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-900">Unit Pricing</th>
               </tr>
             </thead>
             <tbody>
@@ -322,6 +323,16 @@ export function VendorManagement() {
                     <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
                       {vendor.availableIsotopes.length}
                     </span>
+                  </td>
+                  <td className="py-3 px-4 text-gray-700 text-xs">
+                    <div className="space-y-1">
+                      {vendor.availableIsotopes.map((iso) => (
+                        <div key={iso} className="flex justify-between gap-4">
+                          <span className="font-medium">{iso}:</span>
+                          <span className="text-blue-900 font-semibold">${vendor.pricing[iso] || 'N/A'}</span>
+                        </div>
+                      ))}
+                    </div>
                   </td>
                 </tr>
               ))}

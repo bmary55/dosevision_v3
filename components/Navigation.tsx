@@ -23,9 +23,13 @@ export function Navigation() {
         <div className="flex justify-between items-center h-16">
           {/* Logo and Brand */}
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-900 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">DV</span>
-            </div>
+            <img
+              src="/exact-logo.png"
+              alt="DoseVision Logo"
+              width="40"
+              height="40"
+              className="flex-shrink-0"
+            />
             <span className="text-lg font-bold text-blue-900">DoseVision</span>
           </Link>
 
