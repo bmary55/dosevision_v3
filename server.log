@@ -5,8 +5,8 @@
  ⚠ Port 3000 is in use by an unknown process, using available port 3001 instead.
    ▲ Next.js 15.5.3 (Turbopack)
    - Local:        http://localhost:3001
-   - Network:      http://169.254.0.21:3001
-   - Environments: .env.local, .env
+   - Network:      http://169.254.0.   Reload env: .env
+ments: .env.local, .env
 
  ✓ Starting...
  ✓ Ready in 1844ms
@@ -72,3 +72,4 @@ Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allow
  GET /dose-ordering 200 in 6087ms
  GET /dose-ordering 200 in 29008ms
  GET /dose-ordering 200 in 6363ms
+   Reload env: .env
